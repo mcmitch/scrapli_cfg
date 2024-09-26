@@ -141,14 +141,18 @@ class AsyncScrapliCfgIOSXR(AsyncScrapliCfgPlatform, ScrapliCfgIOSXRBase):
         )
 
         if self._replace is True:
-            commit_events = [("commit replace", "proceed?"), ("yes", "")]
+            commit_events = [("commit confirm replace", "proceed?"), ("yes", "")]
             commit_result = await self.conn.send_interactive(
                 interact_events=commit_events, privilege_level=self._config_privilege_level
             )
         else:
-            commit_result = await self.conn.send_config(config="commit")
+            commit_result = await self.conn.send_config(config="commit confirm")
 
         scrapli_responses.append(commit_result)
+        
+        confirm_result = await self.conn.send_config(config="commit")
+        scrapli_responses.append(confirm_result)
+        
         self._reset_config_session()
 
         return self._post_commit_config(response=response, scrapli_responses=[commit_result])
